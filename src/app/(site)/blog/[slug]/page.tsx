@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getFeaturedProducts, categories, creators } from "@/data/seed";
-import { toCardProduct } from "@/lib/utils";
 import { notFound } from "next/navigation";
 
 interface BlogPostFull {
@@ -514,10 +512,6 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const relatedProducts = getFeaturedProducts()
-    .slice(0, 3)
-    .map((p) => toCardProduct(p, categories, creators));
-
   // Article structured data
   const jsonLd = {
     "@context": "https://schema.org",
@@ -620,34 +614,6 @@ export default async function BlogPostPage({
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Related products */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-ink-900 mb-6">
-            Produtos Relacionados
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedProducts.map((product) => {
-              const card = toCardProduct(product, categories, creators);
-              return (
-                <Link
-                  key={product.slug}
-                  href={`/produto/${product.slug}`}
-                  className="block bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-                >
-                  <div className="aspect-video bg-sand-100 overflow-hidden">
-                    <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xs text-ink-500 mb-1">{card.category}</p>
-                    <h3 className="font-semibold text-ink-900 mb-2 line-clamp-2">{card.title}</h3>
-                    <p className="text-sm font-bold text-accent-500">{card.price === 0 ? "Grátis" : `R$ ${card.price.toFixed(2).replace(".", ",")}`}</p>
-                  </div>
-                </Link>
-              );
-            })}
           </div>
         </div>
       </article>
