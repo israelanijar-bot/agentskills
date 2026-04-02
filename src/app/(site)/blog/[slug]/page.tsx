@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import ProductCard from "@/components/ProductCard";
+import dynamic from "next/dynamic";
+const ProductCard = dynamic(() => import("@/components/ProductCard"), { ssr: false });
 import { getFeaturedProducts, categories, creators } from "@/data/seed";
 import { toCardProduct } from "@/lib/utils";
 import { notFound } from "next/navigation";
