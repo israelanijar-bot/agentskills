@@ -1,22 +1,66 @@
-import type { Metadata } from "next";
+"use client";
+
+import { useState, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
-export const metadata: Metadata = {
-  title: "Entrar",
-  robots: { index: false, follow: false },
-};
+function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-export default function LoginPage() {
+  const supabase = createClient();
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(
+        error.message === "Invalid login credentials"
+          ? "Email ou senha incorretos"
+          : error.message
+      );
+      setLoading(false);
+      return;
+    }
+
+    router.push(redirect);
+    router.refresh();
+  }
+
+  async function handleOAuth(provider: "google" | "github") {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
+      },
+    });
+    if (error) setError(error.message);
+  }
+
   return (
     <div className="flex items-center justify-center min-h-[70vh] px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 mb-6">
               <span className="text-3xl">🧩</span>
-              <span className="text-xl font-bold text-ink-900">AgentSkills</span>
+              <span className="text-xl font-bold text-ink-900">
+                AgentSkills
+              </span>
             </Link>
             <h1 className="text-2xl font-bold text-ink-900">
               Bem-vindo de volta
@@ -26,10 +70,18 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Error */}
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           {/* Social buttons */}
           <div className="space-y-3 mb-6">
             <button
               type="button"
+              onClick={() => handleOAuth("google")}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-sand-200 rounded-xl text-sm font-medium text-ink-700 hover:bg-sand-50 cursor-pointer transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -54,6 +106,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
+              onClick={() => handleOAuth("github")}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-ink-900 rounded-xl text-sm font-medium text-white hover:bg-ink-700 cursor-pointer transition-colors"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -78,7 +131,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
@@ -89,8 +142,11 @@ export default function LoginPage() {
               <input
                 id="email"
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 bg-sand-50 border border-sand-200 rounded-xl text-ink-900 placeholder:text-ink-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                required
+                className="w-full px-4 py-3 bg-sand-50 border border-sand-200 rounded-xl text-ink-900 placeholder:text-ink-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
             <div>
@@ -102,7 +158,7 @@ export default function LoginPage() {
                   Senha
                 </label>
                 <Link
-                  href="/login"
+                  href="/recuperar-senha"
                   className="text-xs text-accent-500 hover:text-accent-600 font-medium"
                 >
                   Esqueceu a senha?
@@ -111,15 +167,20 @@ export default function LoginPage() {
               <input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Sua senha"
-                className="w-full px-4 py-3 bg-sand-50 border border-sand-200 rounded-xl text-ink-900 placeholder:text-ink-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20"
+                required
+                minLength={6}
+                className="w-full px-4 py-3 bg-sand-50 border border-sand-200 rounded-xl text-ink-900 placeholder:text-ink-500 focus:border-accent-500 focus:ring-2 focus:ring-accent-500/20 outline-none"
               />
             </div>
             <button
               type="submit"
-              className="w-full px-4 py-3 bg-accent-500 text-white font-semibold rounded-xl hover:bg-accent-600 cursor-pointer transition-colors"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-accent-500 text-white font-semibold rounded-xl hover:bg-accent-600 cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
 
@@ -127,7 +188,7 @@ export default function LoginPage() {
           <p className="text-center text-sm text-ink-500 mt-6">
             Nao tem conta?{" "}
             <Link
-              href="/login"
+              href="/cadastro"
               className="text-accent-500 hover:text-accent-600 font-semibold"
             >
               Cadastre-se
@@ -136,5 +197,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
