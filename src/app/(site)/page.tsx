@@ -4,13 +4,8 @@ import ProductCard from "@/components/ProductCard";
 import CreatorCard from "@/components/CreatorCard";
 import HowItWorks from "@/components/HowItWorks";
 import NewsletterSection from "@/components/NewsletterSection";
-import {
-  getPopularSkills,
-  getPopularPersonas,
-  creators,
-  categories,
-} from "@/data/seed";
-import { toCardProduct } from "@/lib/utils";
+import { getFeaturedProducts, getProducts, getCategories } from "@/lib/queries";
+import { productToCard } from "@/lib/queries";
 
 export const metadata = {
   title: "AgentSkills - O Marketplace de Skills para seus Agentes de IA",
@@ -33,10 +28,33 @@ export const metadata = {
   },
 };
 
-export default function HomePage() {
-  const popularSkills = getPopularSkills().slice(0, 6);
-  const popularPersonas = getPopularPersonas().slice(0, 4);
-  const featuredCreators = creators.slice(0, 4);
+export const revalidate = 3600; // revalida a cada 1h
+
+export default async function HomePage() {
+  const [popularSkills, popularPersonas, featuredCreatorsRaw] = await Promise.all([
+    getProducts({ type: "skill", sort: "popular", limit: 6 }),
+    getProducts({ type: "persona", sort: "popular", limit: 4 }),
+    getProducts({ sort: "popular", limit: 4 }),
+  ]);
+
+  // Extrai criadores únicos dos produtos
+  const creatorsMap = new Map();
+  featuredCreatorsRaw.forEach((p) => {
+    const c = p.creator as { id: string; name: string; username: string | null; avatar_url: string | null } | undefined;
+    if (c && !creatorsMap.has(c.id)) {
+      creatorsMap.set(c.id, {
+        id: c.id,
+        name: c.name,
+        username: c.username || "",
+        avatar: c.avatar_url || `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(c.name)}`,
+        bio: "",
+        totalSales: 0,
+        totalProducts: 0,
+        joinedAt: "",
+      });
+    }
+  });
+  const featuredCreators = Array.from(creatorsMap.values()).slice(0, 4);
 
   return (
     <>
@@ -66,7 +84,7 @@ export default function HomePage() {
             {popularSkills.map((product) => (
               <ProductCard
                 key={product.slug}
-                product={toCardProduct(product, categories, creators)}
+                product={productToCard(product)}
               />
             ))}
           </div>
@@ -104,7 +122,7 @@ export default function HomePage() {
             {popularPersonas.map((product) => (
               <ProductCard
                 key={product.slug}
-                product={toCardProduct(product, categories, creators)}
+                product={productToCard(product)}
               />
             ))}
           </div>
