@@ -160,25 +160,30 @@ export async function getProductsByCreator(creatorId: string): Promise<Product[]
 // Helpers
 // ---------------------------------------------------------------------------
 
-export function productToCard(product: Product): ProductCard {
+// Tipo compatível com o componente ProductCard
+export interface ProductCardLegacy {
+  title: string
+  slug: string
+  price: number
+  image: string
+  creatorName: string
+  salesCount: number
+  type: 'skill' | 'persona' | 'bundle'
+  category: string
+}
+
+export function productToCard(product: Product): ProductCardLegacy {
   const cat = product.category as Category | undefined
   const creator = product.creator as { name: string; username: string | null; avatar_url: string | null } | undefined
 
   return {
-    id: product.id,
     title: product.title,
     slug: product.slug,
-    description: product.description,
-    type: product.type,
     price: product.price,
-    image_url: product.image_url,
-    sales_count: product.sales_count,
-    favorites_count: product.favorites_count,
-    tags: product.tags,
+    image: product.image_url || `https://placehold.co/400x300/1a1a2e/e0e0e0?text=${encodeURIComponent(product.title)}`,
+    creatorName: creator?.name || '',
+    salesCount: product.sales_count,
+    type: product.type,
     category: cat?.name || '',
-    category_slug: cat?.slug || '',
-    creator_name: creator?.name || '',
-    creator_username: creator?.username || '',
-    creator_avatar: creator?.avatar_url || null,
   }
 }

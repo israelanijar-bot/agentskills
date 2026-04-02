@@ -4,8 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import CreatorCard from "@/components/CreatorCard";
 import HowItWorks from "@/components/HowItWorks";
 import NewsletterSection from "@/components/NewsletterSection";
-import { getFeaturedProducts, getProducts, getCategories } from "@/lib/queries";
-import { productToCard } from "@/lib/queries";
+import { getProducts, productToCard } from "@/lib/queries";
 
 export const metadata = {
   title: "AgentSkills - O Marketplace de Skills para seus Agentes de IA",
