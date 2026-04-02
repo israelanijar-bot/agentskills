@@ -1,0 +1,3 @@
+{
+  "buildCommand": "next build --experimental-build-mode=compile"
+}

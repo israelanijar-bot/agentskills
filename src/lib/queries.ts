@@ -3,20 +3,22 @@
  * AgentSkills.com.br
  */
 
-import { createClient } from '@supabase/supabase-js'
-import type { Category, Product, ProductCard, ProductType } from '@/types/database'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import type { Category, Product, ProductType } from '@/types/database'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseKey)
+function getClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Categorias
 // ---------------------------------------------------------------------------
 
 export async function getCategories(): Promise<Category[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('categories')
     .select('*')
     .order('name')
@@ -26,7 +28,7 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('categories')
     .select('*')
     .eq('slug', slug)
@@ -59,7 +61,7 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
     sort = 'popular',
   } = options
 
-  let query = supabase
+  let query = getClient()
     .from('products')
     .select(`
       *,
@@ -70,7 +72,7 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
 
   if (categorySlug) {
     // Busca pelo slug da categoria via join
-    const { data: cat } = await supabase
+    const { data: cat } = await getClient()
       .from('categories')
       .select('id')
       .eq('slug', categorySlug)
@@ -110,7 +112,7 @@ export async function getProducts(options: GetProductsOptions = {}): Promise<Pro
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('products')
     .select(`
       *,
@@ -126,7 +128,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('products')
     .select(`
       *,
@@ -142,7 +144,7 @@ export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
 }
 
 export async function getProductsByCreator(creatorId: string): Promise<Product[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getClient()
     .from('products')
     .select(`
       *,

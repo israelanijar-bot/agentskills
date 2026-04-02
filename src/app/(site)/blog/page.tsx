@@ -23,7 +23,7 @@ export interface BlogPost {
   image: string;
 }
 
-export const blogPosts: BlogPost[] = [
+const blogPosts: BlogPost[] = [
   {
     slug: "como-instalar-openclaw",
     title: "Como Instalar o OpenClaw no seu Computador em 10 Minutos",
