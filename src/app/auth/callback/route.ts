@@ -7,8 +7,8 @@ export async function GET(request: Request) {
   const redirect = searchParams.get("redirect") || "/";
 
   if (code) {
-    const responseUrl = `${origin}${redirect}`;
-    const response = NextResponse.redirect(responseUrl);
+    const response = NextResponse.redirect(`${origin}${redirect}`);
+    const cookiesSet: string[] = [];
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,16 +16,16 @@ export async function GET(request: Request) {
       {
         cookies: {
           getAll() {
-            return request.headers
-              .get("cookie")
-              ?.split("; ")
-              .map((c) => {
-                const [name, ...rest] = c.split("=");
-                return { name, value: rest.join("=") };
-              }) ?? [];
+            const cookieHeader = request.headers.get("cookie") || "";
+            if (!cookieHeader) return [];
+            return cookieHeader.split("; ").map((c) => {
+              const [name, ...rest] = c.split("=");
+              return { name, value: rest.join("=") };
+            });
           },
           setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
             cookiesToSet.forEach(({ name, value, options }) => {
+              cookiesSet.push(name);
               response.cookies.set(name, value, options);
             });
           },
@@ -33,14 +33,24 @@ export async function GET(request: Request) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      return response;
+    if (error) {
+      // Debug: mostrar o erro na URL
+      const errorUrl = new URL(`${origin}/login`);
+      errorUrl.searchParams.set("error", error.message);
+      return NextResponse.redirect(errorUrl.toString());
     }
 
-    console.error("OAuth callback error:", error.message);
+    // Debug: se nenhum cookie foi setado, algo está errado
+    if (cookiesSet.length === 0) {
+      const errorUrl = new URL(`${origin}/login`);
+      errorUrl.searchParams.set("error", "no-cookies-set");
+      return NextResponse.redirect(errorUrl.toString());
+    }
+
+    return response;
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return NextResponse.redirect(`${origin}/login?error=no-code`);
 }
