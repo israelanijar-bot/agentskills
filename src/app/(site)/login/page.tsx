@@ -41,13 +41,22 @@ function LoginForm() {
   }
 
   async function handleOAuth(provider: "google" | "github") {
-    const { error } = await supabase.auth.signInWithOAuth({
+    setError("");
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     });
-    if (error) setError(error.message);
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+    if (data?.url) {
+      window.location.href = data.url;
+    }
   }
 
   return (
