@@ -1,12 +1,17 @@
 # AGENTS.md — Guia de Agentes AIOX para Operação Autônoma
 
+## Modo de Execução: Checkpoint via Axel
+
+Cada agente opera **100% autônomo dentro da sua fase** — sem perguntas, sem confirmações. Ao terminar, gera um relatório de handoff e **PARA**. O Axel (bridge externa) analisa o relatório e decide se continua, pede mudanças ou cancela.
+
+**Regra de ouro**: 1 agente por sessão. Execute, reporte, pare.
+
 ## Como Usar os Agentes
 
-O AIOX fornece agentes especializados em `.aiox-core/development/agents/`. Cada agente tem persona, autoridade e comandos próprios.
+Os agentes estão em `.aiox-core/development/agents/`. Cada um tem persona, zona de autoridade e comandos exclusivos.
 
-**Ativação**: Use `@agent-name` para carregar o agente (ex: `@dev`, `@qa`).
-**Comandos**: Prefixo `*` (ex: `*help`, `*create-story`, `*task build`).
-**Handoff**: Ao trocar de agente, o contexto anterior é compactado automaticamente.
+**Ativação**: `@agent-name` (ex: `@dev`, `@qa`)
+**Comandos**: Prefixo `*` (ex: `*help`, `*task build`)
 
 ## Agentes Disponíveis
 
@@ -22,45 +27,62 @@ O AIOX fornece agentes especializados em `.aiox-core/development/agents/`. Cada 
 | `@data-engineer` | Dara (Specialist) | Schema, migrations, RLS, queries |
 | `@ux-design-expert` | Uma (Artisan) | UI/UX, wireframes, design system |
 | `@devops` | Gage (Guardian) | git push, PRs, CI/CD (**EXCLUSIVO**) |
-| `@aiox-master` | Orion (Orchestrator) | Orquestração geral, governança do framework |
+| `@aiox-master` | Orion (Orchestrator) | Orquestração geral, governança |
 
 ## Autoridade Exclusiva
 
-**CRÍTICO — Respeitar sempre:**
-
-| Operação | Agente Exclusivo | Outros Agentes |
-|----------|-----------------|----------------|
+| Operação | Agente Exclusivo | Outros |
+|----------|-----------------|--------|
 | `git push`, `gh pr create` | `@devops` | BLOQUEADO |
 | `git add`, `git commit` | `@dev` | Permitido |
 | Criar/validar stories | `@sm` / `@po` | BLOQUEADO |
 | Schema/migrations SQL | `@data-engineer` | BLOQUEADO |
 | Decisão de arquitetura | `@architect` | BLOQUEADO |
 
-## Workflows Principais
+## Workflows com Checkpoint
 
-### 1. Story Development Cycle (SDC) — Fluxo padrão
-
-```
-@sm *draft → @po *validate → @dev *develop → @qa *qa-gate → @devops *push
-```
-
-### 2. Para tarefas simples (bug fix, ajuste pequeno)
+### Story Development Cycle (SDC) — 5 sessões
 
 ```
-@dev *task build → (implementa) → git commit
+Sessão 1: @sm   → Cria story draft        → handoff → PARA (Axel analisa)
+Sessão 2: @po   → Valida story (10 checks)→ handoff → PARA (Axel analisa)
+Sessão 3: @dev  → Implementa código       → handoff → PARA (Axel analisa)
+Sessão 4: @qa   → QA gate (7 checks)      → handoff → PARA (Axel analisa)
+Sessão 5: commit final, Axel faz push
 ```
 
-### 3. Para mudanças no banco de dados
+### Task Simples (bug fix, ajuste) — 1 sessão
 
 ```
-@data-engineer *task db-apply-migration → (cria SQL) → aplica migration
+Sessão 1: @dev  → Implementa fix, builda, commita → handoff → PARA
 ```
 
-### 4. Para QA após implementação
+### Mudança no Banco — 2 sessões
 
 ```
-@qa *qa-gate → (revisa) → @dev *task apply-qa-fixes → @qa (re-review)
+Sessão 1: @data-engineer → Cria migration SQL    → handoff → PARA (Axel analisa)
+Sessão 2: @data-engineer → Aplica migration      → handoff → PARA
 ```
+
+### QA Loop — N sessões
+
+```
+Sessão 1: @qa   → Review e veredicto      → handoff → PARA
+Sessão 2: @dev  → Aplica fixes            → handoff → PARA
+Sessão 3: @qa   → Re-review               → handoff → PARA
+(repete até APPROVE, max 5 iterações)
+```
+
+## Protocolo do Agente em Cada Sessão
+
+Ao receber uma task, o agente deve:
+
+1. **Verificar handoff anterior**: Ler `.aiox/handoffs/checkpoint-latest.md` se existir
+2. **Executar a fase completa**: Sem perguntas, tome todas as decisões
+3. **Validar**: Rodar `npm run build` se houve mudança de código
+4. **Commitar** (se houve mudança de código): `git add` + `git commit`
+5. **Gerar handoff**: Salvar relatório em `.aiox/handoffs/checkpoint-latest.md`
+6. **Retornar output**: Resumo do que foi feito para o Axel
 
 ## Tarefas Mais Usadas
 
@@ -69,39 +91,28 @@ O AIOX fornece agentes especializados em `.aiox-core/development/agents/`. Cada 
 | `@dev *task build` | Implementar feature/fix |
 | `@dev *task build-autonomous` | Build totalmente autônomo |
 | `@qa *task qa-gate` | Quality gate com 7 checks |
-| `@qa *task qa-run-tests` | Rodar testes |
-| `@data-engineer *task db-apply-migration` | Criar/aplicar migration SQL |
-| `@data-engineer *task db-schema-audit` | Auditar schema do banco |
+| `@data-engineer *task db-apply-migration` | Criar/aplicar migration |
+| `@data-engineer *task db-schema-audit` | Auditar schema |
 | `@sm *task create-next-story` | Criar próxima story |
 | `@architect *task analyze-project-structure` | Analisar estrutura |
 
-## Para o Axel (Bridge)
+## Mapeamento: Pedido do Axel → Agente
 
-Quando o Axel enviar uma task via `claude --print -p "task"`:
-
-1. **Identifique o tipo de trabalho** (código, banco, design, etc.)
-2. **Escolha o agente apropriado** da tabela acima
-3. **Execute o comando** do agente
-4. **Valide com build** (`npm run build`)
-5. **Commit** com mensagem descritiva em português
-6. **NÃO faça push** — o Axel controla isso
-
-### Mapeamento de Tasks do Axel → Agente
-
-| Pedido do Axel | Agente | Comando |
-|----------------|--------|---------|
-| "adicionar feature X" | `@dev` | `*task build` |
-| "corrigir bug em Y" | `@dev` | `*task build` |
-| "criar tabela no banco" | `@data-engineer` | `*task db-apply-migration` |
-| "melhorar performance" | `@dev` | `*task dev-optimize-performance` |
-| "revisar qualidade" | `@qa` | `*task qa-gate` |
-| "mudar layout da página" | `@dev` | `*task build` |
-| "analisar arquitetura" | `@architect` | `*task analyze-project-structure` |
-| "criar story para X" | `@sm` | `*task create-next-story` |
+| Pedido do Axel | Agente | Ação |
+|----------------|--------|------|
+| "adicionar feature X" | `@dev` | Implementa, builda, commita |
+| "corrigir bug em Y" | `@dev` | Fix, builda, commita |
+| "criar tabela no banco" | `@data-engineer` | Gera SQL, documenta |
+| "revisar qualidade" | `@qa` | QA gate, lista issues |
+| "mudar layout da página" | `@dev` | Altera componente, builda |
+| "analisar arquitetura" | `@architect` | Analisa, documenta |
+| "criar story para X" | `@sm` | Cria story em docs/stories/ |
+| `continuar` | Lê handoff | Executa próxima fase do workflow |
+| `status` | — | Retorna último checkpoint |
 
 ## Next.js 16 — ATENÇÃO
 
-Esta versão tem breaking changes. APIs, convenções e estrutura de arquivos podem diferir do training data. Consulte `node_modules/next/dist/docs/` antes de escrever código novo. Respeite deprecation notices.
+Esta versão tem breaking changes. Consulte `node_modules/next/dist/docs/` antes de escrever código novo. Respeite deprecation notices.
 
 ## Regras de Segurança
 

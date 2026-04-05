@@ -6,11 +6,90 @@ Este projeto é operado por **Axel**, um agente autônomo que envia tasks via `c
 
 **Regras para sessões autônomas:**
 - Execute a task recebida completamente, sem pedir confirmação
+- NÃO pergunte nada durante a execução — tome decisões e execute
 - Faça commits com mensagens descritivas em português
 - NÃO faça `git push` — apenas commit local (Axel faz o push depois)
 - Se algo falhar, explique o erro claramente no output para o Axel interpretar
 - Sempre rode `npm run build` antes de commitar para validar
 - Responda SEMPRE em português brasileiro
+
+## Protocolo de Checkpoint (Axel Bridge)
+
+Quando executar um workflow com múltiplos agentes (ex: Story Development Cycle), **NÃO execute todos os agentes de uma vez**. Siga o protocolo de checkpoint:
+
+### Fluxo de Execução
+
+1. **Axel envia task** → Claude ativa o agente apropriado
+2. **Agente executa fase completa** — sem perguntar nada, totalmente autônomo
+3. **Ao terminar, gera relatório de handoff** em `.aiox/handoffs/`
+4. **PARA e retorna o output** para o Axel analisar
+5. **Axel analisa e responde**: aprova, pede mudanças, ou cancela
+6. **Próxima sessão**: Claude lê o handoff e continua com o próximo agente
+
+### Formato do Handoff
+
+Ao terminar cada fase, salve o relatório em `.aiox/handoffs/checkpoint-latest.md`:
+
+```markdown
+# Checkpoint: [Nome do Agente] — [Fase]
+
+## Status: COMPLETO | PARCIAL | ERRO
+
+## O que foi feito
+- [Lista do que o agente executou]
+
+## Arquivos modificados
+- [Lista de arquivos criados/alterados/removidos]
+
+## Decisões tomadas
+- [Decisões técnicas que o agente tomou sozinho]
+
+## Próximo passo
+- **Próximo agente**: @[agente]
+- **Ação esperada**: [o que o próximo agente deve fazer]
+- **Comando sugerido**: `*[comando]`
+
+## Observações para o Axel
+- [Qualquer coisa que o Axel precise saber antes de aprovar]
+- [Riscos, dúvidas, alternativas consideradas]
+```
+
+### Regras do Checkpoint
+
+- **1 agente por sessão** — execute apenas a fase atual, pare e reporte
+- **Sem perguntas internas** — tome decisões dentro da fase, não interrompa
+- **Handoff sempre** — mesmo que a fase tenha sido simples, gere o checkpoint
+- **Leia antes de continuar** — ao receber "continuar", leia o último handoff em `.aiox/handoffs/checkpoint-latest.md`
+- **Mudanças do Axel** — se o Axel pedir alterações, aplique-as antes de prosseguir
+
+### Exemplo de Workflow Completo
+
+```
+Sessão 1: Axel envia "criar feature X"
+  → Claude ativa @sm, cria story, salva handoff, PARA
+
+Sessão 2: Axel envia "aprovado, continuar"
+  → Claude lê handoff, ativa @po, valida story, salva handoff, PARA
+
+Sessão 3: Axel envia "aprovado, continuar"
+  → Claude lê handoff, ativa @dev, implementa, salva handoff, PARA
+
+Sessão 4: Axel envia "aprovado, continuar"
+  → Claude lê handoff, ativa @qa, faz QA gate, salva handoff, PARA
+
+Sessão 5: Axel envia "aprovado, fazer push"
+  → Claude commita final, Axel faz o push
+```
+
+### Atalhos do Axel
+
+| Comando do Axel | Ação do Claude |
+|----------------|----------------|
+| `continuar` | Lê handoff, executa próxima fase, gera novo handoff |
+| `continuar com mudanças: [X]` | Aplica mudanças X, depois executa próxima fase |
+| `refazer` | Re-executa a mesma fase com correções |
+| `status` | Retorna o conteúdo do último handoff |
+| `cancelar` | Limpa handoff, não faz nada |
 
 ## Stack Técnico
 
