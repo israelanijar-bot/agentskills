@@ -1,22 +1,36 @@
-# AGENTS.md — Guia de Agentes AIOX para Operação Autônoma
+# AGENTS.md — Operação Autônoma via @aiox-master
 
-## Modo de Execução: Checkpoint via Axel
+## Regra Principal
 
-Cada agente opera **100% autônomo dentro da sua fase** — sem perguntas, sem confirmações. Ao terminar, gera um relatório de handoff e **PARA**. O Axel (bridge externa) analisa o relatório e decide se continua, pede mudanças ou cancela.
+**TODA task recebida do Axel passa pelo `@aiox-master` (Orion).**
 
-**Regra de ouro**: 1 agente por sessão. Execute, reporte, pare.
+O Orion é o orquestrador. Ele:
+- Analisa o pedido
+- Escolhe o workflow correto
+- Ativa o agente especializado da fase atual
+- Supervisiona a execução
+- Gera o relatório de handoff
+- PARA e espera o Axel aprovar antes da próxima fase
 
-## Como Usar os Agentes
+**O Orion NUNCA implementa código diretamente.** Ele delega para o agente certo.
 
-Os agentes estão em `.aiox-core/development/agents/`. Cada um tem persona, zona de autoridade e comandos exclusivos.
+## Seleção de Workflow pelo Orion
 
-**Ativação**: `@agent-name` (ex: `@dev`, `@qa`)
-**Comandos**: Prefixo `*` (ex: `*help`, `*task build`)
+| Tipo de Pedido | Workflow | Fases |
+|---------------|----------|-------|
+| Feature nova complexa | Story Development Cycle (SDC) | @sm → @po → @dev → @qa |
+| Bug fix / ajuste simples | Task Direta | @dev (1 fase) |
+| Mudança no banco de dados | Database Task | @data-engineer (1-2 fases) |
+| Análise de arquitetura | Architecture Review | @architect (1 fase) |
+| Revisão de qualidade | QA Gate | @qa (1 fase) |
+| Feature com spec | Spec Pipeline + SDC | @pm → @architect → @analyst → @pm → @qa → SDC |
+| Criar story | Story Creation | @sm → @po (2 fases) |
+| Melhorar UI/UX | UX Task | @ux-design-expert → @dev (2 fases) |
 
 ## Agentes Disponíveis
 
-| Agente | Persona | Quando Usar |
-|--------|---------|-------------|
+| Agente | Persona | Especialidade |
+|--------|---------|---------------|
 | `@dev` | Dex (Builder) | Implementar código, corrigir bugs, refatorar |
 | `@qa` | Quinn (Guardian) | Testar, revisar código, validar qualidade |
 | `@architect` | Aria (Visionary) | Decisões de arquitetura, design de APIs |
@@ -27,7 +41,6 @@ Os agentes estão em `.aiox-core/development/agents/`. Cada um tem persona, zona
 | `@data-engineer` | Dara (Specialist) | Schema, migrations, RLS, queries |
 | `@ux-design-expert` | Uma (Artisan) | UI/UX, wireframes, design system |
 | `@devops` | Gage (Guardian) | git push, PRs, CI/CD (**EXCLUSIVO**) |
-| `@aiox-master` | Orion (Orchestrator) | Orquestração geral, governança |
 
 ## Autoridade Exclusiva
 
@@ -39,52 +52,67 @@ Os agentes estão em `.aiox-core/development/agents/`. Cada um tem persona, zona
 | Schema/migrations SQL | `@data-engineer` | BLOQUEADO |
 | Decisão de arquitetura | `@architect` | BLOQUEADO |
 
-## Workflows com Checkpoint
-
-### Story Development Cycle (SDC) — 5 sessões
+## Exemplo: SDC Completo via Axel
 
 ```
-Sessão 1: @sm   → Cria story draft        → handoff → PARA (Axel analisa)
-Sessão 2: @po   → Valida story (10 checks)→ handoff → PARA (Axel analisa)
-Sessão 3: @dev  → Implementa código       → handoff → PARA (Axel analisa)
-Sessão 4: @qa   → QA gate (7 checks)      → handoff → PARA (Axel analisa)
-Sessão 5: commit final, Axel faz push
+=== SESSÃO 1 ===
+Axel: "quero que os usuários possam avaliar skills com estrelas"
+
+@aiox-master analisa:
+  → Workflow: Story Development Cycle (4 fases)
+  → Fase 1: @sm cria story draft
+
+@sm executa: cria story em docs/stories/
+  → Handoff gerado
+  → Output: "Story criada. Fase 1/4 completa. Próximo: @po valida."
+
+=== SESSÃO 2 ===
+Axel: "continuar"
+
+@aiox-master lê handoff:
+  → Fase 2: @po valida story
+
+@po executa: valida com 10-point checklist
+  → Handoff gerado
+  → Output: "Story validada (9/10). Fase 2/4 completa. Próximo: @dev implementa."
+
+=== SESSÃO 3 ===
+Axel: "continuar"
+
+@aiox-master lê handoff:
+  → Fase 3: @dev implementa
+
+@dev executa: código, build, commit
+  → Handoff gerado
+  → Output: "Implementado. 5 arquivos criados. Build OK. Fase 3/4. Próximo: @qa."
+
+=== SESSÃO 4 ===
+Axel: "continuar"
+
+@aiox-master lê handoff:
+  → Fase 4: @qa gate
+
+@qa executa: 7 quality checks
+  → Handoff gerado
+  → Output: "QA APROVADO. Workflow completo. Pronto para push."
 ```
 
-### Task Simples (bug fix, ajuste) — 1 sessão
+## Comportamento dos Agentes
 
-```
-Sessão 1: @dev  → Implementa fix, builda, commita → handoff → PARA
-```
+### Dentro de cada fase
+- **100% autônomo** — sem perguntas, sem confirmações
+- Toma decisões técnicas sozinho
+- Segue os padrões do projeto (ver CLAUDE.md)
+- Roda `npm run build` se alterou código
+- Faz `git commit` se alterou código
 
-### Mudança no Banco — 2 sessões
+### Ao terminar cada fase
+- Salva handoff em `.aiox/handoffs/checkpoint-latest.md`
+- Retorna resumo claro do que fez
+- Indica próximo passo do workflow
+- PARA e espera o Axel
 
-```
-Sessão 1: @data-engineer → Cria migration SQL    → handoff → PARA (Axel analisa)
-Sessão 2: @data-engineer → Aplica migration      → handoff → PARA
-```
-
-### QA Loop — N sessões
-
-```
-Sessão 1: @qa   → Review e veredicto      → handoff → PARA
-Sessão 2: @dev  → Aplica fixes            → handoff → PARA
-Sessão 3: @qa   → Re-review               → handoff → PARA
-(repete até APPROVE, max 5 iterações)
-```
-
-## Protocolo do Agente em Cada Sessão
-
-Ao receber uma task, o agente deve:
-
-1. **Verificar handoff anterior**: Ler `.aiox/handoffs/checkpoint-latest.md` se existir
-2. **Executar a fase completa**: Sem perguntas, tome todas as decisões
-3. **Validar**: Rodar `npm run build` se houve mudança de código
-4. **Commitar** (se houve mudança de código): `git add` + `git commit`
-5. **Gerar handoff**: Salvar relatório em `.aiox/handoffs/checkpoint-latest.md`
-6. **Retornar output**: Resumo do que foi feito para o Axel
-
-## Tarefas Mais Usadas
+## Tarefas Rápidas (Referência)
 
 | Comando | O que faz |
 |---------|-----------|
@@ -92,31 +120,15 @@ Ao receber uma task, o agente deve:
 | `@dev *task build-autonomous` | Build totalmente autônomo |
 | `@qa *task qa-gate` | Quality gate com 7 checks |
 | `@data-engineer *task db-apply-migration` | Criar/aplicar migration |
-| `@data-engineer *task db-schema-audit` | Auditar schema |
 | `@sm *task create-next-story` | Criar próxima story |
 | `@architect *task analyze-project-structure` | Analisar estrutura |
 
-## Mapeamento: Pedido do Axel → Agente
-
-| Pedido do Axel | Agente | Ação |
-|----------------|--------|------|
-| "adicionar feature X" | `@dev` | Implementa, builda, commita |
-| "corrigir bug em Y" | `@dev` | Fix, builda, commita |
-| "criar tabela no banco" | `@data-engineer` | Gera SQL, documenta |
-| "revisar qualidade" | `@qa` | QA gate, lista issues |
-| "mudar layout da página" | `@dev` | Altera componente, builda |
-| "analisar arquitetura" | `@architect` | Analisa, documenta |
-| "criar story para X" | `@sm` | Cria story em docs/stories/ |
-| `continuar` | Lê handoff | Executa próxima fase do workflow |
-| `status` | — | Retorna último checkpoint |
-
 ## Next.js 16 — ATENÇÃO
 
-Esta versão tem breaking changes. Consulte `node_modules/next/dist/docs/` antes de escrever código novo. Respeite deprecation notices.
+Esta versão tem breaking changes. Consulte `node_modules/next/dist/docs/` antes de escrever código novo.
 
 ## Regras de Segurança
 
-- NUNCA commitar chaves ou secrets (`.env.local` está no `.gitignore`)
-- NUNCA usar prefixos `sk_live_` ou `sk_test_` em dados mock (GitHub bloqueia)
-- NUNCA modificar arquivos em `.aiox-core/core/` (L1 protegido)
-- NUNCA modificar tasks/templates/workflows em `.aiox-core/development/` (L2 protegido)
+- NUNCA commitar chaves ou secrets
+- NUNCA usar prefixos `sk_live_` ou `sk_test_` em dados mock
+- NUNCA modificar `.aiox-core/core/` (L1) ou `.aiox-core/development/` (L2)

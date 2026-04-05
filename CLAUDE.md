@@ -13,26 +13,49 @@ Este projeto é operado por **Axel**, um agente autônomo que envia tasks via `c
 - Sempre rode `npm run build` antes de commitar para validar
 - Responda SEMPRE em português brasileiro
 
+## Ponto de Entrada: Sempre @aiox-master
+
+**TODA task do Axel deve ser processada pelo `@aiox-master` (Orion).** Ele é o orquestrador que:
+
+1. Recebe o pedido do Axel
+2. Analisa e escolhe o **workflow correto**
+3. Identifica o **primeiro agente** a ser ativado
+4. Ativa o agente e deixa ele executar a fase completa
+5. Gera o **relatório de handoff** para o Axel revisar
+6. **PARA** e retorna o output
+
+Na próxima sessão, quando o Axel enviar "continuar", o `@aiox-master` lê o handoff, ativa o **próximo agente** do workflow, e repete o ciclo.
+
+**O Orion nunca executa código diretamente** — ele delega para o agente especializado correto.
+
 ## Protocolo de Checkpoint (Axel Bridge)
 
-Quando executar um workflow com múltiplos agentes (ex: Story Development Cycle), **NÃO execute todos os agentes de uma vez**. Siga o protocolo de checkpoint:
+### Fluxo Completo
 
-### Fluxo de Execução
+```
+Axel envia pedido
+  → @aiox-master analisa, escolhe workflow, ativa agente da fase 1
+    → Agente executa fase completa (autônomo, sem perguntas)
+    → Gera handoff em .aiox/handoffs/checkpoint-latest.md
+    → PARA — retorna output para Axel
 
-1. **Axel envia task** → Claude ativa o agente apropriado
-2. **Agente executa fase completa** — sem perguntar nada, totalmente autônomo
-3. **Ao terminar, gera relatório de handoff** em `.aiox/handoffs/`
-4. **PARA e retorna o output** para o Axel analisar
-5. **Axel analisa e responde**: aprova, pede mudanças, ou cancela
-6. **Próxima sessão**: Claude lê o handoff e continua com o próximo agente
+Axel revisa handoff, envia "continuar"
+  → @aiox-master lê handoff, ativa agente da fase 2
+    → Agente executa fase completa
+    → Gera handoff atualizado
+    → PARA — retorna output para Axel
+
+(repete até workflow completo)
+```
 
 ### Formato do Handoff
 
-Ao terminar cada fase, salve o relatório em `.aiox/handoffs/checkpoint-latest.md`:
+Ao terminar cada fase, salve em `.aiox/handoffs/checkpoint-latest.md`:
 
 ```markdown
-# Checkpoint: [Nome do Agente] — [Fase]
+# Checkpoint: @[agente] — [Fase N de M]
 
+## Workflow: [nome do workflow escolhido]
 ## Status: COMPLETO | PARCIAL | ERRO
 
 ## O que foi feito
@@ -45,51 +68,24 @@ Ao terminar cada fase, salve o relatório em `.aiox/handoffs/checkpoint-latest.m
 - [Decisões técnicas que o agente tomou sozinho]
 
 ## Próximo passo
+- **Fase**: [N+1] de [M]
 - **Próximo agente**: @[agente]
 - **Ação esperada**: [o que o próximo agente deve fazer]
-- **Comando sugerido**: `*[comando]`
 
 ## Observações para o Axel
-- [Qualquer coisa que o Axel precise saber antes de aprovar]
-- [Riscos, dúvidas, alternativas consideradas]
+- [Riscos, dúvidas, alternativas, qualquer coisa relevante]
 ```
 
-### Regras do Checkpoint
+### Comandos do Axel
 
-- **1 agente por sessão** — execute apenas a fase atual, pare e reporte
-- **Sem perguntas internas** — tome decisões dentro da fase, não interrompa
-- **Handoff sempre** — mesmo que a fase tenha sido simples, gere o checkpoint
-- **Leia antes de continuar** — ao receber "continuar", leia o último handoff em `.aiox/handoffs/checkpoint-latest.md`
-- **Mudanças do Axel** — se o Axel pedir alterações, aplique-as antes de prosseguir
-
-### Exemplo de Workflow Completo
-
-```
-Sessão 1: Axel envia "criar feature X"
-  → Claude ativa @sm, cria story, salva handoff, PARA
-
-Sessão 2: Axel envia "aprovado, continuar"
-  → Claude lê handoff, ativa @po, valida story, salva handoff, PARA
-
-Sessão 3: Axel envia "aprovado, continuar"
-  → Claude lê handoff, ativa @dev, implementa, salva handoff, PARA
-
-Sessão 4: Axel envia "aprovado, continuar"
-  → Claude lê handoff, ativa @qa, faz QA gate, salva handoff, PARA
-
-Sessão 5: Axel envia "aprovado, fazer push"
-  → Claude commita final, Axel faz o push
-```
-
-### Atalhos do Axel
-
-| Comando do Axel | Ação do Claude |
-|----------------|----------------|
-| `continuar` | Lê handoff, executa próxima fase, gera novo handoff |
-| `continuar com mudanças: [X]` | Aplica mudanças X, depois executa próxima fase |
+| Comando do Axel | O que o @aiox-master faz |
+|----------------|--------------------------|
+| `[qualquer pedido]` | Analisa, escolhe workflow, executa fase 1, gera handoff |
+| `continuar` | Lê handoff, executa próxima fase do workflow |
+| `continuar com mudanças: [X]` | Aplica mudanças X primeiro, depois próxima fase |
 | `refazer` | Re-executa a mesma fase com correções |
 | `status` | Retorna o conteúdo do último handoff |
-| `cancelar` | Limpa handoff, não faz nada |
+| `cancelar` | Limpa handoff, encerra workflow |
 
 ## Stack Técnico
 
@@ -169,11 +165,10 @@ src/
 - Modo de teste (chaves test)
 - Fluxo: `/api/checkout` cria Session → redireciona ao Stripe → volta para `/compra/sucesso`
 - Webhook em `/api/webhook/stripe` (precisa de STRIPE_WEBHOOK_SECRET para produção)
-- Cartão de teste: 4242 4242 4242 4242
 
 ## Dados
 
-Atualmente usa **dados mock** em `src/data/seed.ts`. As queries em `src/lib/queries.ts` já apontam para Supabase mas as tabelas ainda não foram populadas. A home page usa queries do Supabase; páginas de produto usam seed data.
+Atualmente usa **dados mock** em `src/data/seed.ts`. As queries em `src/lib/queries.ts` já apontam para Supabase mas as tabelas ainda não foram populadas.
 
 ## Variáveis de Ambiente
 
@@ -201,6 +196,6 @@ Definidas em `.env.local` (local) e Vercel (produção):
 
 ## AIOX Framework
 
-O AIOX está instalado em `.aiox-core/`. Para tarefas complexas, use os agentes especializados.
+O AIOX está instalado em `.aiox-core/`. Consulte o AGENTS.md para detalhes dos agentes e workflows.
 
 @AGENTS.md
