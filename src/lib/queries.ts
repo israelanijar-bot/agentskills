@@ -159,6 +159,58 @@ export async function getProductsByCreator(creatorId: string): Promise<Product[]
 }
 
 // ---------------------------------------------------------------------------
+// Purchases
+// ---------------------------------------------------------------------------
+
+export async function getUserPurchases(userId: string) {
+  const { data, error } = await getClient()
+    .from('purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'completed')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getUserPurchase(userId: string, productSlug: string) {
+  const { data, error } = await getClient()
+    .from('purchases')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('product_slug', productSlug)
+    .eq('status', 'completed')
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export async function createPurchase(purchase: {
+  user_id: string
+  product_slug: string
+  stripe_session_id: string
+  stripe_payment_intent: string | null
+  amount: number
+  currency?: string
+}) {
+  const { data, error } = await getClient()
+    .from('purchases')
+    .insert({
+      ...purchase,
+      currency: purchase.currency || 'brl',
+      status: 'completed',
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

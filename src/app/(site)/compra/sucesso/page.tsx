@@ -17,6 +17,7 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
   let productName = "Seu produto";
   let productPrice = "";
   let customerEmail = "";
+  let productSlug = "";
 
   if (session_id) {
     try {
@@ -29,6 +30,7 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
         ? `R$ ${(session.amount_total / 100).toFixed(2).replace(".", ",")}`
         : "";
       customerEmail = session.customer_details?.email || "";
+      productSlug = session.metadata?.product_slug || "";
     } catch {
       // Se nao conseguir recuperar a sessao, mostra dados genericos
     }
@@ -67,6 +69,16 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
             </>
           )}
         </p>
+
+        {/* Download button for pack-openclaw-pt */}
+        {productSlug === "pack-openclaw-pt" && (
+          <a
+            href="/downloads/pack-openclaw-pt/"
+            className="inline-flex items-center justify-center gap-3 w-full px-8 py-4 bg-blue-600 text-white font-bold text-lg rounded-2xl hover:bg-blue-700 transition-colors mb-8 shadow-lg"
+          >
+            ⬇️ Baixar Pack OpenClaw PT
+          </a>
+        )}
 
         {/* Product summary */}
         <div className="bg-white rounded-2xl p-6 shadow-sm mb-8 text-left">

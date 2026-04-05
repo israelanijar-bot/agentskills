@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { createPurchase } from "@/lib/queries";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -27,13 +28,36 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
+      const userId = session.metadata?.user_id;
+      const productSlug = session.metadata?.product_slug;
+
       console.log("Payment completed:", {
         sessionId: session.id,
-        productSlug: session.metadata?.product_slug,
+        productSlug,
+        userId,
         customerEmail: session.customer_details?.email,
         amountTotal: session.amount_total,
       });
-      // TODO: Registrar compra no Supabase quando conectar dados reais
+
+      // Gravar compra no Supabase
+      if (userId && productSlug && session.amount_total) {
+        try {
+          await createPurchase({
+            user_id: userId,
+            product_slug: productSlug,
+            stripe_session_id: session.id,
+            stripe_payment_intent:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : null,
+            amount: session.amount_total,
+            currency: session.currency || "brl",
+          });
+          console.log("Purchase saved:", { userId, productSlug });
+        } catch (err) {
+          console.error("Failed to save purchase:", err);
+        }
+      }
       break;
     }
     default:

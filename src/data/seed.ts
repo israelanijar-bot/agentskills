@@ -699,6 +699,41 @@ Todas as ferramentas compartilham dados entre si: o assistente financeiro acessa
     installInstructions: 'openclaw install @pedroalmeida/kit-financas-pessoais --bundle',
     filesIncluded: ['bundle.yaml', 'assistente-financeiro/', 'analise-dados/', 'orquestrador-tarefas/', 'planilha-orcamento.xlsx', 'guia-investimentos.md'],
   },
+
+  // ========== PACKS EXCLUSIVOS ==========
+  {
+    id: 'prod-21',
+    title: 'OpenClaw PT Pack',
+    slug: 'pack-openclaw-pt',
+    description: 'Pack completo para configurar seu agente OpenClaw em portugues. Inclui SOUL, AGENTS, BOOT, HEARTBEAT, MEMORY, IDENTITY e guia de setup.',
+    longDescription: `O OpenClaw PT Pack e o kit definitivo para quem quer configurar um agente OpenClaw totalmente em portugues brasileiro, pronto para operar de forma autonoma e inteligente.
+
+Este pack inclui 7 arquivos essenciais que definem a personalidade, comportamento, memoria e identidade do seu agente. Cada arquivo foi cuidadosamente escrito em portugues, seguindo as melhores praticas do ecossistema OpenClaw.
+
+O que voce recebe:
+- SOUL.md: Define a alma e personalidade do agente — tom de voz, valores, estilo de comunicacao
+- AGENTS.md: Configuracao de sub-agentes especializados que trabalham em conjunto
+- BOOT.md: Instrucoes de inicializacao — o que o agente faz ao ser ligado
+- HEARTBEAT.md: Sistema de monitoramento e health checks automaticos
+- MEMORY.md: Arquitetura de memoria persistente para contexto entre sessoes
+- IDENTITY.md: Identidade completa — nome, papel, contexto e limitacoes
+- SETUP-GUIDE.md: Guia passo-a-passo para instalar e configurar tudo
+
+Ideal para desenvolvedores brasileiros que querem um agente que realmente entende e se comunica em portugues nativo, sem traducoes genericas.`,
+    type: 'bundle',
+    price: 97.00,
+    categoryId: 'cat-programacao',
+    creatorId: 'creator-1',
+    salesCount: 0,
+    favoritesCount: 0,
+    version: '1.0.0',
+    createdAt: '2026-04-04',
+    updatedAt: '2026-04-04',
+    image: 'https://placehold.co/400x300/1a1a2e/e0e0e0?text=OpenClaw+PT+Pack',
+    tags: ['openclaw', 'agente', 'portugues', 'configuracao', 'pack', 'autonomo'],
+    installInstructions: 'Baixe o pack apos a compra e copie os arquivos para a raiz do seu projeto OpenClaw. Consulte o SETUP-GUIDE.md para instrucoes detalhadas.',
+    filesIncluded: ['SOUL.md', 'AGENTS.md', 'BOOT.md', 'HEARTBEAT.md', 'MEMORY.md', 'IDENTITY.md', 'SETUP-GUIDE.md'],
+  },
 ];
 
 // ---------------------------------------------------------------------------
