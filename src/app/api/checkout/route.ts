@@ -4,6 +4,13 @@ import { getProductBySlug } from "@/data/seed";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Pagamento nao configurado ainda" },
+      { status: 503 }
+    );
+  }
+
   try {
     const { slug } = await request.json();
 

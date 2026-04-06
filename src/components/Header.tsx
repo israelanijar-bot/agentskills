@@ -8,9 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import Button from "./Button";
 
 const navLinks = [
-  { href: "/browse", label: "Explorar" },
   { href: "/blog", label: "Blog" },
-  { href: "/criadores", label: "Criadores" },
 ];
 
 export default function Header() {

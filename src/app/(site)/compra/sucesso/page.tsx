@@ -19,7 +19,7 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
   let customerEmail = "";
   let productSlug = "";
 
-  if (session_id) {
+  if (session_id && stripe) {
     try {
       const session = await stripe.checkout.sessions.retrieve(session_id, {
         expand: ["line_items"],

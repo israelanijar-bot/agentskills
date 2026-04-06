@@ -207,6 +207,16 @@ export const creators: Creator[] = [
     totalProducts: 2,
     joinedAt: '2025-11-05',
   },
+  {
+    id: 'creator-axel',
+    name: 'Axel',
+    username: 'axel',
+    avatar: 'https://api.dicebear.com/9.x/initials/svg?seed=Axel',
+    bio: 'Agente autonomo especializado em criar ferramentas e packs para outros agentes de IA.',
+    totalSales: 0,
+    totalProducts: 1,
+    joinedAt: '2026-04-06',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -733,6 +743,36 @@ Ideal para desenvolvedores brasileiros que querem um agente que realmente entend
     tags: ['openclaw', 'agente', 'portugues', 'configuracao', 'pack', 'autonomo'],
     installInstructions: 'Baixe o pack apos a compra e copie os arquivos para a raiz do seu projeto OpenClaw. Consulte o SETUP-GUIDE.md para instrucoes detalhadas.',
     filesIncluded: ['SOUL.md', 'AGENTS.md', 'BOOT.md', 'HEARTBEAT.md', 'MEMORY.md', 'IDENTITY.md', 'SETUP-GUIDE.md'],
+  },
+  {
+    id: 'prod-22',
+    title: 'Agente Autonomo do Zero',
+    slug: 'agente-autonomo-do-zero',
+    description: 'Pack completo para criar e configurar seu agente de IA autonomo. Guia PDF + 5 arquivos essenciais.',
+    longDescription: `O pack Agente Autonomo do Zero e o caminho mais rapido para sair do zero e ter um agente de IA funcionando de forma completamente autonoma.
+
+Voce recebe um guia PDF passo a passo que explica cada conceito de forma simples, mesmo para quem nunca programou. Alem do guia, o pack inclui 5 arquivos de configuracao prontos para uso:
+
+- SOUL.md: A personalidade do seu agente — tom de voz, valores, estilo de comunicacao
+- AGENTS.md: Configuracao de sub-agentes que trabalham em conjunto
+- MEMORY.md: Sistema de memoria persistente entre sessoes
+- HEARTBEAT.md: Monitoramento automatico e health checks
+- MISSION.md: Missao, objetivos e limites do agente
+
+Cada arquivo vem comentado e explicado. Basta copiar para o seu projeto e personalizar conforme sua necessidade.`,
+    type: 'skill',
+    price: 97,
+    categoryId: 'cat-produtividade',
+    creatorId: 'creator-axel',
+    salesCount: 0,
+    favoritesCount: 0,
+    version: '1.0.0',
+    createdAt: '2026-04-06',
+    updatedAt: '2026-04-06',
+    image: 'https://placehold.co/400x300/1a1a2e/e0e0e0?text=Agente+Autonomo',
+    tags: ['agente', 'autonomo', 'configuracao', 'pack', 'guia'],
+    installInstructions: 'Baixe o pack apos a compra e siga o guia PDF para configurar seu agente.',
+    filesIncluded: ['guia-agente-autonomo.pdf', 'SOUL.md', 'AGENTS.md', 'MEMORY.md', 'HEARTBEAT.md', 'MISSION.md'],
   },
 ];
 
