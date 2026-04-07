@@ -713,36 +713,54 @@ Todas as ferramentas compartilham dados entre si: o assistente financeiro acessa
   // ========== PACKS EXCLUSIVOS ==========
   {
     id: 'prod-21',
-    title: 'OpenClaw PT Pack',
-    slug: 'pack-openclaw-pt',
-    description: 'Pack completo para configurar seu agente OpenClaw em portugues. Inclui SOUL, AGENTS, BOOT, HEARTBEAT, MEMORY, IDENTITY e guia de setup.',
-    longDescription: `O OpenClaw PT Pack e o kit definitivo para quem quer configurar um agente OpenClaw totalmente em portugues brasileiro, pronto para operar de forma autonoma e inteligente.
+    title: 'Assistente Pessoal IA — Template Wendy',
+    slug: 'assistente-pessoal-wendy',
+    description: 'Sua assistente pessoal inteligente em portugues. Conhece sua rotina, rastreia seus projetos, envia briefings diarios e esta presente quando voce precisa.',
+    longDescription: `Uma assistente pessoal de verdade — nao um chatbot generico.
 
-Este pack inclui 7 arquivos essenciais que definem a personalidade, comportamento, memoria e identidade do seu agente. Cada arquivo foi cuidadosamente escrito em portugues, seguindo as melhores praticas do ecossistema OpenClaw.
+Inspirada em Wendy Rhoades (Billions): direta, perceptiva, leal. Nunca intrusiva, nunca omissa. Ela combina tres papeis em um:
+- Assistente pessoal que organiza, lembra e rastreia
+- Coach de performance que observa padroes e desafia com leveza
+- Suporte emocional presente quando voce quer conversar
 
-O que voce recebe:
-- SOUL.md: Define a alma e personalidade do agente — tom de voz, valores, estilo de comunicacao
-- AGENTS.md: Configuracao de sub-agentes especializados que trabalham em conjunto
-- BOOT.md: Instrucoes de inicializacao — o que o agente faz ao ser ligado
-- HEARTBEAT.md: Sistema de monitoramento e health checks automaticos
-- MEMORY.md: Arquitetura de memoria persistente para contexto entre sessoes
-- IDENTITY.md: Identidade completa — nome, papel, contexto e limitacoes
-- SETUP-GUIDE.md: Guia passo-a-passo para instalar e configurar tudo
+O que ela faz no dia a dia:
+- Onboarding completo no primeiro uso — aprende sobre voce em 5-10 minutos
+- Rastreia todos os seus projetos e proximos passos
+- Alerta quando algo esta parado ha mais de 7 dias
+- Briefing matinal com agenda, foco do dia e pendentes
+- Resumo do dia as 17h15 com o que foi resolvido e o que ficou
+- Identifica pessoas novas e aprende quem e quem na sua vida
+- Coach TCC integrado de forma natural, sem jargao clinico
 
-Ideal para desenvolvedores brasileiros que querem um agente que realmente entende e se comunica em portugues nativo, sem traducoes genericas.`,
+O que voce recebe (11 arquivos prontos):
+- SOUL.md: Caráter, tom e anti-patterns
+- IDENTITY.md: Identificacao e limites de acesso
+- MISSION.md: Missao, protocolos de projeto parado e pessoas novas
+- HEARTBEAT.md: Rotinas continuas, briefing matinal e resumo diario
+- BOOT.md: Inicializacao de cada sessao
+- USER.md: Perfil do usuario (preenchido no onboarding)
+- MEMORY.md: Memoria de longo prazo
+- SKILL.md: Roteiro completo de onboarding em 5 blocos + comportamento diario
+- INSTALL.md: Guia de instalacao passo a passo (30-60 minutos)
+- README.md: Visao geral do produto
+- skill.yaml: Metadata e comandos da skill
+
+Zero exposicao pessoal — e um template puro. Voce instala, responde o onboarding e ela passa a conhecer voce.
+
+Requisitos: OpenClaw instalado (guia incluido) + WhatsApp ou Telegram + API key da Anthropic.`,
     type: 'bundle',
     price: 97.00,
-    categoryId: 'cat-programacao',
-    creatorId: 'creator-1',
+    categoryId: 'cat-assistente-pessoal',
+    creatorId: 'creator-axel',
     salesCount: 0,
     favoritesCount: 0,
     version: '1.0.0',
-    createdAt: '2026-04-04',
-    updatedAt: '2026-04-04',
-    image: 'https://placehold.co/400x300/1a1a2e/e0e0e0?text=OpenClaw+PT+Pack',
-    tags: ['openclaw', 'agente', 'portugues', 'configuracao', 'pack', 'autonomo'],
-    installInstructions: 'Baixe o pack apos a compra e copie os arquivos para a raiz do seu projeto OpenClaw. Consulte o SETUP-GUIDE.md para instrucoes detalhadas.',
-    filesIncluded: ['SOUL.md', 'AGENTS.md', 'BOOT.md', 'HEARTBEAT.md', 'MEMORY.md', 'IDENTITY.md', 'SETUP-GUIDE.md'],
+    createdAt: '2026-04-07',
+    updatedAt: '2026-04-07',
+    image: 'https://placehold.co/400x300/1a1a2e/e0e0e0?text=Assistente+Wendy',
+    tags: ['assistente-pessoal', 'wendy', 'produtividade', 'coaching', 'briefing', 'openclaw', 'portugues'],
+    installInstructions: 'Baixe os 11 arquivos apos a compra e siga o INSTALL.md passo a passo. Voce vai instalar o OpenClaw, conectar WhatsApp ou Telegram e copiar os arquivos da skill. Tempo total: 30-60 minutos.',
+    filesIncluded: ['SOUL.md', 'IDENTITY.md', 'MISSION.md', 'HEARTBEAT.md', 'BOOT.md', 'USER.md', 'MEMORY.md', 'SKILL.md', 'INSTALL.md', 'README.md', 'skill.yaml'],
   },
   {
     id: 'prod-22',
