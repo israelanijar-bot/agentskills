@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { createPurchase } from "@/lib/queries";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -43,10 +43,21 @@ export async function POST(request: NextRequest) {
         amountTotal: session.amount_total,
       });
 
-      // Gravar compra no Supabase
-      if (userId && productSlug && session.amount_total) {
-        try {
-          await createPurchase({
+      // Gravar compra no Supabase (usa service_role para bypass de RLS)
+      if (!userId || !productSlug || !session.amount_total) {
+        console.error("Webhook: metadata incompleta — nao grava purchase:", {
+          userId,
+          productSlug,
+          amount: session.amount_total,
+        });
+        break;
+      }
+
+      try {
+        const admin = createAdminClient();
+        const { data, error } = await admin
+          .from("purchases")
+          .insert({
             user_id: userId,
             product_slug: productSlug,
             stripe_session_id: session.id,
@@ -56,11 +67,32 @@ export async function POST(request: NextRequest) {
                 : null,
             amount: session.amount_total,
             currency: session.currency || "brl",
-          });
-          console.log("Purchase saved:", { userId, productSlug });
-        } catch (err) {
-          console.error("Failed to save purchase:", err);
+            status: "completed",
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Webhook: erro ao gravar purchase:", error);
+          // Retornar 500 faz o Stripe tentar de novo, o que e' desejavel
+          return NextResponse.json(
+            { error: "Failed to save purchase" },
+            { status: 500 }
+          );
         }
+
+        console.log("Purchase saved:", {
+          id: data.id,
+          userId,
+          productSlug,
+          amount: session.amount_total,
+        });
+      } catch (err) {
+        console.error("Webhook: excecao ao gravar purchase:", err);
+        return NextResponse.json(
+          { error: "Internal error" },
+          { status: 500 }
+        );
       }
       break;
     }
