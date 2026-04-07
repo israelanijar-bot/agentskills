@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function CadastroPage() {
-  const router = useRouter();
+function CadastroForm() {
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +27,7 @@ export default function CadastroPage() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
       },
     });
 
@@ -48,7 +49,7 @@ export default function CadastroPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
       },
     });
     if (error) setError(error.message);
@@ -209,12 +210,23 @@ export default function CadastroPage() {
 
           <p className="text-center text-sm text-ink-500 mt-6">
             Ja tem conta?{" "}
-            <Link href="/login" className="text-accent-500 hover:text-accent-600 font-semibold">
+            <Link
+              href={redirect !== "/" ? `/login?redirect=${encodeURIComponent(redirect)}` : "/login"}
+              className="text-accent-500 hover:text-accent-600 font-semibold"
+            >
               Entrar
             </Link>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CadastroPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[70vh]">Carregando...</div>}>
+      <CadastroForm />
+    </Suspense>
   );
 }

@@ -57,7 +57,9 @@ export async function updateSession(request: NextRequest) {
   // Redirect logged-in users away from login/cadastro
   if (user && (pathname === "/login" || pathname === "/cadastro")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    const redirectParam = request.nextUrl.searchParams.get("redirect");
+    url.pathname = redirectParam && redirectParam.startsWith("/") ? redirectParam : "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
