@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { stripe } from "@/lib/stripe";
+import DownloadButton from "@/components/DownloadButton";
 
 export const metadata: Metadata = {
   title: "Compra realizada com sucesso!",
@@ -70,14 +71,11 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
           )}
         </p>
 
-        {/* Download button for pack-openclaw-pt */}
-        {productSlug === "pack-openclaw-pt" && (
-          <a
-            href="/downloads/pack-openclaw-pt/"
-            className="inline-flex items-center justify-center gap-3 w-full px-8 py-4 bg-blue-600 text-white font-bold text-lg rounded-2xl hover:bg-blue-700 transition-colors mb-8 shadow-lg"
-          >
-            ⬇️ Baixar Pack OpenClaw PT
-          </a>
+        {/* Download button autenticado via Supabase signed URLs */}
+        {productSlug && (
+          <div className="mb-8">
+            <DownloadButton slug={productSlug} label="Baixar arquivos do produto" />
+          </div>
         )}
 
         {/* Product summary */}
