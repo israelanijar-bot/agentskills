@@ -23,9 +23,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Produto gratuito" }, { status: 400 });
     }
 
-    // Obter user_id do usuario autenticado
+    // Exigir autenticacao antes do checkout para garantir que a compra
+    // seja gravada no webhook (user_id e' obrigatorio para associar a purchase).
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Faca login para comprar", redirect: `/login?next=/checkout/${product.slug}` },
+        { status: 401 }
+      );
+    }
 
     const origin = request.headers.get("origin") || "http://localhost:3000";
 
@@ -49,7 +57,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         product_slug: product.slug,
         product_id: product.id,
-        user_id: user?.id || "",
+        user_id: user.id,
       },
       success_url: `${origin}/compra/sucesso?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout/${product.slug}`,

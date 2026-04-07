@@ -109,7 +109,7 @@ export default async function CompraSucessoPage({ searchParams }: Props) {
 
           <div className="border-t border-sand-200 pt-4 flex flex-col sm:flex-row gap-3">
             <Link
-              href="/dashboard"
+              href="/minhas-compras"
               className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent-500 text-white font-bold rounded-xl hover:bg-accent-600 transition-colors text-sm"
             >
               <svg

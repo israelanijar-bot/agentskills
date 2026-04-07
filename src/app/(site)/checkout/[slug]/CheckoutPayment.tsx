@@ -30,6 +30,11 @@ export default function CheckoutPayment({
       const data = await response.json();
 
       if (!response.ok) {
+        // Se nao autenticado, redireciona para login
+        if (response.status === 401 && data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
         throw new Error(data.error || "Erro ao processar pagamento");
       }
 
