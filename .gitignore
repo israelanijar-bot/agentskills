@@ -26,6 +26,7 @@
 
 # arquivos de produtos pagos — devem ficar APENAS no Supabase Storage
 /public/downloads/
+/public/packs/
 
 # debug
 npm-debug.log*
