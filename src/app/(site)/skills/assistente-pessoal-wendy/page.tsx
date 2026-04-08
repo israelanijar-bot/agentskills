@@ -126,19 +126,6 @@ export default function AssistentePessoalWendyPage() {
   return (
     <div className="py-8 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-ink-500 mb-8">
-          <Link href="/" className="hover:text-accent-500">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/browse" className="hover:text-accent-500">
-            Marketplace
-          </Link>
-          <span>/</span>
-          <span className="text-ink-700 font-medium">Assistente Pessoal IA</span>
-        </nav>
-
         {/* Hero */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-16">
           {/* Left - Visual */}

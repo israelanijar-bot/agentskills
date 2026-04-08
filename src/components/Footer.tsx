@@ -5,34 +5,10 @@ import Link from "next/link";
 
 const columns = [
   {
-    title: "Produto",
-    links: [
-      { label: "Explorar", href: "/explorar" },
-      { label: "Personas", href: "/explorar?tipo=persona" },
-      { label: "Skills", href: "/explorar?tipo=skill" },
-      { label: "Bundles", href: "/explorar?tipo=bundle" },
-    ],
-  },
-  {
-    title: "Categorias",
-    links: [
-      { label: "Atendimento", href: "/categoria/atendimento" },
-      { label: "Marketing", href: "/categoria/marketing" },
-      { label: "Vendas", href: "/categoria/vendas" },
-      { label: "Financeiro", href: "/categoria/financeiro" },
-      { label: "RH", href: "/categoria/rh" },
-      { label: "Jurídico", href: "/categoria/juridico" },
-      { label: "Educação", href: "/categoria/educacao" },
-      { label: "Saúde", href: "/categoria/saude" },
-    ],
-  },
-  {
     title: "Recursos",
     links: [
       { label: "Blog", href: "/blog" },
       { label: "Newsletter", href: "#newsletter" },
-      { label: "Como Funciona", href: "/como-funciona" },
-      { label: "API", href: "/api-docs" },
     ],
   },
   {
@@ -96,7 +72,7 @@ export default function Footer() {
         </div>
 
         {/* Columns */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 gap-8 mb-12 max-w-md">
           {columns.map((col) => (
             <div key={col.title}>
               <h4 className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">

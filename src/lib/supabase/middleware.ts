@@ -31,6 +31,23 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Marketplace soft-disabled - redirect all marketplace routes to the Wendy landing
+  // Keeps the routes in the codebase but blocks public access
+  const MARKETPLACE_PREFIXES = [
+    "/browse",
+    "/explorar",
+    "/produto",
+    "/categoria",
+    "/criadores",
+    "/criador",
+  ];
+  if (MARKETPLACE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/skills/assistente-pessoal-wendy";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
   // Protected routes - redirect to login if not authenticated
   if (!user && (pathname.startsWith("/dashboard") || pathname.startsWith("/admin") || pathname.startsWith("/minhas-compras") || pathname.startsWith("/favoritos") || pathname.startsWith("/perfil") || pathname.startsWith("/checkout"))) {
     const url = request.nextUrl.clone();
