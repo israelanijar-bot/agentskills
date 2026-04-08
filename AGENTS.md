@@ -52,50 +52,11 @@ O Orion é o orquestrador. Ele:
 | Schema/migrations SQL | `@data-engineer` | BLOQUEADO |
 | Decisão de arquitetura | `@architect` | BLOQUEADO |
 
-## Exemplo: SDC Completo via Axel
+## Como o Axel invoca cada fase
 
-```
-=== SESSÃO 1 ===
-Axel: "quero que os usuários possam avaliar skills com estrelas"
+O Axel invoca cada fase do workflow via `axel-claude -t <topico> "<instrução em português>"`, usando um tópico estável por unidade de trabalho (uma story, uma feature, um bug). Cada chamada dentro do mesmo tópico compartilha contexto via sessão persistente do Claude Code — não há "palavras mágicas" como `continuar`, basta a próxima instrução em português natural na mesma thread.
 
-@aiox-master analisa:
-  → Workflow: Story Development Cycle (4 fases)
-  → Fase 1: @sm cria story draft
-
-@sm executa: cria story em docs/stories/
-  → Handoff gerado
-  → Output: "Story criada. Fase 1/4 completa. Próximo: @po valida."
-
-=== SESSÃO 2 ===
-Axel: "continuar"
-
-@aiox-master lê handoff:
-  → Fase 2: @po valida story
-
-@po executa: valida com 10-point checklist
-  → Handoff gerado
-  → Output: "Story validada (9/10). Fase 2/4 completa. Próximo: @dev implementa."
-
-=== SESSÃO 3 ===
-Axel: "continuar"
-
-@aiox-master lê handoff:
-  → Fase 3: @dev implementa
-
-@dev executa: código, build, commit
-  → Handoff gerado
-  → Output: "Implementado. 5 arquivos criados. Build OK. Fase 3/4. Próximo: @qa."
-
-=== SESSÃO 4 ===
-Axel: "continuar"
-
-@aiox-master lê handoff:
-  → Fase 4: @qa gate
-
-@qa executa: 7 quality checks
-  → Handoff gerado
-  → Output: "QA APROVADO. Workflow completo. Pronto para push."
-```
+A documentação completa do protocolo do lado do Axel (sintaxe, regras, escalação) mora em `~/.openclaw/agents/axel/workspace/AGENTS.md` — esse outro AGENTS.md pertence ao agente OpenClaw, não ao projeto.
 
 ## Comportamento dos Agentes
 
@@ -107,10 +68,11 @@ Axel: "continuar"
 - Faz `git commit` se alterou código
 
 ### Ao terminar cada fase
-- Salva handoff em `.aiox/handoffs/checkpoint-latest.md`
-- Retorna resumo claro do que fez
+- Retorna resumo claro do que fez (o que mudou, arquivos, decisões)
 - Indica próximo passo do workflow
-- PARA e espera o Axel
+- PARA e retorna o output — o contexto fica salvo na sessão persistente
+  do tópico, então a próxima invocação do Axel naquele mesmo tópico
+  retoma de onde parou
 
 ## Tarefas Rápidas (Referência)
 
@@ -122,10 +84,6 @@ Axel: "continuar"
 | `@data-engineer *task db-apply-migration` | Criar/aplicar migration |
 | `@sm *task create-next-story` | Criar próxima story |
 | `@architect *task analyze-project-structure` | Analisar estrutura |
-
-## Next.js 16 — ATENÇÃO
-
-Esta versão tem breaking changes. Consulte `node_modules/next/dist/docs/` antes de escrever código novo.
 
 ## Regras de Segurança
 

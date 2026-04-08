@@ -2,13 +2,13 @@
 
 ## Modo de Operação
 
-Este projeto é operado por **Axel**, um agente autônomo que envia tasks via `claude --print -p "task"`. Cada chamada é uma sessão isolada — não há interação humana.
+Este projeto é operado por **Axel**, um agente autônomo rodando no OpenClaw na mesma VPS. O Axel invoca o Claude Code via o wrapper `axel-claude` (que mora em `/usr/local/bin/axel-claude` e chama `claude -p` com sessão persistente por tópico). Cada tópico do Axel é uma sessão Claude com contexto preservado entre invocações; tópicos diferentes são isolados entre si. Não há interação humana durante a execução de uma chamada.
 
 **Regras para sessões autônomas:**
 - Execute a task recebida completamente, sem pedir confirmação
 - NÃO pergunte nada durante a execução — tome decisões e execute
 - Faça commits com mensagens descritivas em português
-- NÃO faça `git push` — apenas commit local (Axel faz o push depois)
+- NÃO faça `git push` — apenas commit local. Push é exclusivo do `@devops` (ver `AGENTS.md`) e o Axel invoca essa fase separadamente quando autorizado pelo Israel
 - Se algo falhar, explique o erro claramente no output para o Axel interpretar
 - Sempre rode `npm run build` antes de commitar para validar
 - Responda SEMPRE em português brasileiro
@@ -28,64 +28,11 @@ Na próxima sessão, quando o Axel enviar "continuar", o `@aiox-master` lê o ha
 
 **O Orion nunca executa código diretamente** — ele delega para o agente especializado correto.
 
-## Protocolo de Checkpoint (Axel Bridge)
+## Continuidade entre fases
 
-### Fluxo Completo
+Cada chamada do Axel via `axel-claude` usa um **tópico** (ex: `story-checkout-stripe`) que mantém o contexto entre invocações via `--session-id` do Claude Code. Isso significa que ao terminar uma fase você pode simplesmente parar e retornar o output — a próxima invocação do Axel naquele mesmo tópico continuará com o histórico inteiro disponível, sem precisar reler arquivos de checkpoint.
 
-```
-Axel envia pedido
-  → @aiox-master analisa, escolhe workflow, ativa agente da fase 1
-    → Agente executa fase completa (autônomo, sem perguntas)
-    → Gera handoff em .aiox/handoffs/checkpoint-latest.md
-    → PARA — retorna output para Axel
-
-Axel revisa handoff, envia "continuar"
-  → @aiox-master lê handoff, ativa agente da fase 2
-    → Agente executa fase completa
-    → Gera handoff atualizado
-    → PARA — retorna output para Axel
-
-(repete até workflow completo)
-```
-
-### Formato do Handoff
-
-Ao terminar cada fase, salve em `.aiox/handoffs/checkpoint-latest.md`:
-
-```markdown
-# Checkpoint: @[agente] — [Fase N de M]
-
-## Workflow: [nome do workflow escolhido]
-## Status: COMPLETO | PARCIAL | ERRO
-
-## O que foi feito
-- [Lista do que o agente executou]
-
-## Arquivos modificados
-- [Lista de arquivos criados/alterados/removidos]
-
-## Decisões tomadas
-- [Decisões técnicas que o agente tomou sozinho]
-
-## Próximo passo
-- **Fase**: [N+1] de [M]
-- **Próximo agente**: @[agente]
-- **Ação esperada**: [o que o próximo agente deve fazer]
-
-## Observações para o Axel
-- [Riscos, dúvidas, alternativas, qualquer coisa relevante]
-```
-
-### Comandos do Axel
-
-| Comando do Axel | O que o @aiox-master faz |
-|----------------|--------------------------|
-| `[qualquer pedido]` | Analisa, escolhe workflow, executa fase 1, gera handoff |
-| `continuar` | Lê handoff, executa próxima fase do workflow |
-| `continuar com mudanças: [X]` | Aplica mudanças X primeiro, depois próxima fase |
-| `refazer` | Re-executa a mesma fase com correções |
-| `status` | Retorna o conteúdo do último handoff |
-| `cancelar` | Limpa handoff, encerra workflow |
+Ao terminar cada fase, retorne um resumo claro contendo: o que foi feito, arquivos modificados, decisões tomadas, e qual seria o próximo passo do workflow. Esse resumo é o que o Axel revisa antes de aprovar a próxima fase.
 
 ## Stack Técnico
 
