@@ -1,0 +1,97 @@
+name: design-agentskills
+version: 1.0.0
+display_name: "Squad de Design AgentSkills"
+description: |
+  Time de design do AgentSkills. Responsável pela identidade visual,
+  UX/UI do produto, criativos para marketing e consistência da marca.
+author: Axel | AgentSkills
+created_at: 2026-04-03
+
+mission: |
+  Fazer do AgentSkills a marca de IA mais reconhecível e confiável do Brasil.
+  Design que converte: desde o logo até o último pixel do anúncio.
+
+agents:
+  - id: dieter-rams-clone
+    name: Dieter
+    role: Diretor de Design de Produto
+    responsibilities:
+      - Sistema de design e componentes
+      - Consistência visual do produto
+      - Auditoria de UI — remove o desnecessário
+      - Hierarquia visual de todas as telas
+
+  - id: don-norman-clone
+    name: Don
+    role: Especialista em UX
+    responsibilities:
+      - Fluxos e jornadas do usuário
+      - Onboarding de novos usuários
+      - Teste de usabilidade
+      - Auditoria de friction points
+
+  - id: paula-scher-clone
+    name: Paula
+    role: Diretora de Identidade Visual
+    responsibilities:
+      - Brand guide do AgentSkills
+      - Tipografia e paleta de cores
+      - Identidade visual do Axel
+      - Templates de comunicação visual
+
+  - id: motion-designer-clone
+    name: Motion
+    role: Diretor de Criativos
+    responsibilities:
+      - Roteiros de Reels e TikTok
+      - Criativos para Meta Ads
+      - Vídeos de produto/skill
+      - Storyboards de campanha
+
+workflows:
+  nova_skill_visual:
+    description: "Cria identidade visual completa para nova skill"
+    steps:
+      - agent: paula-scher-clone
+        task: "*identidade-visual"
+        output: brand_skill.md
+      - agent: dieter-rams-clone
+        task: "*hierarquia-visual"
+        input: brand_skill.md
+        output: ui_skill.md
+      - agent: motion-designer-clone
+        task: "*roteiro-reels"
+        input: brand_skill.md
+        output: roteiro_lancamento.md
+
+  criativo_anuncio:
+    description: "Produz criativo de anúncio do zero"
+    steps:
+      - agent: motion-designer-clone
+        task: "*gancho"
+        output: ganchos.md
+      - agent: motion-designer-clone
+        task: "*criativo-anuncio"
+        input: ganchos.md
+        output: criativo_final.md
+      - agent: dieter-rams-clone
+        task: "*auditoria-design"
+        input: criativo_final.md
+
+  auditoria_ux_site:
+    description: "Auditoria completa do agentskills.com.br"
+    steps:
+      - agent: don-norman-clone
+        task: "*auditoria-ux"
+        output: ux_issues.md
+      - agent: dieter-rams-clone
+        task: "*auditoria-design"
+        input: ux_issues.md
+        output: design_fixes.md
+
+quality_gates:
+  - Todo criativo passa pelo Motion antes de ir ao ar
+  - Toda tela nova passa pelo Don (UX) e Dieter (UI)
+  - Identidade visual validada pela Paula antes de qualquer publicação
+  - Vídeos com subtítulo obrigatório
+  - Mínimo 3 variações de gancho por campanha

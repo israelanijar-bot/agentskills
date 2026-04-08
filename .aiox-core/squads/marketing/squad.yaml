@@ -1,0 +1,75 @@
+name: marketing-agentskills
+version: 1.0.0
+display_name: "Squad de Marketing AgentSkills"
+description: |
+  Time de marketing do AgentSkills, composto por clones de elite minds brasileiros.
+  Responsável por crescimento, conteúdo, vendas e tráfego pago.
+author: Axel | AgentSkills
+created_at: 2026-04-03
+
+mission: |
+  Levar o AgentSkills a R$1M em 12 meses através de conteúdo de valor,
+  lançamentos estratégicos, tráfego pago escalável e copy que converte.
+
+agents:
+  - id: erico-rocha-clone
+    role: Estrategista de Lançamentos
+    responsibilities:
+      - Planejar lançamentos de skills e agentes
+      - Criar sequências de email
+      - Estruturar CPLs e campanhas de abertura
+
+  - id: camila-porto-clone
+    role: Estrategista de Tráfego e Conteúdo
+    responsibilities:
+      - Calendário de conteúdo mensal
+      - Estratégia de Meta Ads
+      - Crescimento de audiência orgânica
+
+  - id: rafael-albertoni-clone
+    role: Copywriter Chefe
+    responsibilities:
+      - Copy de todas as páginas de venda
+      - Headlines de anúncios
+      - Emails de nurturing e vendas
+
+  - id: pedro-sobral-clone
+    role: Gestor de Tráfego Pago
+    responsibilities:
+      - Estrutura e otimização de Meta Ads
+      - Google Ads para palavras-chave de intenção
+      - Escala das campanhas que convertem
+
+workflows:
+  lancamento_skill:
+    description: "Fluxo para lançar uma nova skill no mercado"
+    steps:
+      - agent: erico-rocha-clone
+        task: "*estrategia-lancamento"
+        output: plano_lancamento.md
+      - agent: rafael-albertoni-clone
+        task: "*pagina-vendas"
+        input: plano_lancamento.md
+        output: pagina_venda.md
+      - agent: camila-porto-clone
+        task: "*calendario-conteudo"
+        input: plano_lancamento.md
+        output: calendario_cpl.md
+      - agent: pedro-sobral-clone
+        task: "*estrutura-campanha"
+        input: pagina_venda.md
+        output: campanha_meta.md
+
+  crescimento_organico:
+    description: "Fluxo semanal de conteúdo orgânico"
+    steps:
+      - agent: camila-porto-clone
+        task: "*calendario-conteudo"
+      - agent: rafael-albertoni-clone
+        task: "*anuncio"
+
+quality_gates:
+  - Toda copy passa por Rafael antes de publicar
+  - Todo anúncio tem pelo menos 3 criativos para teste
+  - Todo lançamento tem CPL de pelo menos 7 dias
+  - ROAS mínimo de 3x antes de escalar qualquer campanha
